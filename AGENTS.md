@@ -1,20 +1,23 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Each exercise lives in its own directory (e.g., `D_flip-flop`, `contatore_4_bit`) and carries a consistent layout: implementation under `src/top.v`, testbench under `sim/tb_top.v`, a local `Makefile`, and a `build/` folder for generated artifacts. Treat every directory as an isolated lab; keep changes scoped so you can simulate without affecting other exercises. Module names and filenames follow lowercase snake_case (except the canonical `top` entry point), so match that pattern when adding new designs.
+Each exercise (e.g., `D_flip-flop`, `contatore_4_bit`, `my_ff`) is a self-contained lab with `src/top.v`, `sim/tb_top.v`, its own `Makefile`, and a transient `build/` directory produced at compile time. Keep edits scoped to the active lab so `make all` stays deterministic, and reuse the same layout whenever you add a new exercise. Stick to lowercase snake_case for directories, nets, and helper modules; reserve the name `top` for the module entry point unless an exercise explicitly asks otherwise.
+
+## Teaching Workflow
+The learner types; you dictate in deliberate chunks. For ogni blocco: (1) descrivi l’obiettivo ad alto livello, (2) detta le linee necessarie, (3) spiega perché funzionano, (4) fermati per domande. Favorisci sequenze concettuali (porte → latch → flip-flop → contatore) così ogni passo costruisce sul precedente. Niente GUI: osserva i segnali dal terminale, ragiona sui tempi di propagazione e usa ogni debug per rinforzare i concetti hardware, non solo la sintassi.
 
 ## Build, Test, and Development Commands
-Run commands from within the target exercise folder:
-- `make all` — compile `src/top.v` and `sim/tb_top.v` with iverilog (`-g2012`), then launch the vvp simulation and print console output.
-- `make waves` — open GTKWave on `build/top.vcd`; call `make all` first so the dump exists.
-- `make clean` — remove everything under `build/` to guarantee a fresh compile.
-If you need to probe internal nets, instrument the testbench and rerun `make all`.
+Esegui tutto dentro la cartella dell’esercizio:
+- `make all` compila `src/top.v` + `sim/tb_top.v` con `iverilog -g2012` e avvia `vvp`.
+- `make waves` passa `build/waves.vcd` allo strumento CLI `vcd` e lo pipe-a in `less -S`, così le forme d’onda restano leggibili in testo.
+- `make clean` elimina `build/` per garantire run puliti.
+Se servono nuove probe, modifica solo la testbench locale e ripeti `make all`; non committare i file generati.
 
 ## Coding Style & Naming Conventions
-Use tabs for indentation and keep ports aligned vertically for readability, as shown in `D_flip-flop/src/top.v`. Clocked logic lives in `always @(posedge clk …)` blocks with non-blocking assignments (`<=`), while combinational glue uses `assign` or `always @(*)` with blocking `=`. Default to descriptive lower_snake_case signal names (`clk`, `reset_n`, `count_q`). Limit each module to one responsibility and document any non-obvious sequences with a short comment above the block.
+Usa tab per l’indentazione, allinea le porte verticalmente e raggruppa la logica per comportamento. La logica sequenziale vive in `always @(posedge clk)` con assegnazioni non bloccanti; la combinazione sta in `assign` o `always @(*)` con bloccanti. Denomina i segnali con snake_case descrittivo (`clk`, `reset_n`, `drive_en`, `count_q`), usa `_n` per gli ingressi attivi bassi e documenta brevemente solo i blocchi che potrebbero confondere chi studia.
 
 ## Testing Guidelines
-Every feature needs a matching stimulus in `sim/tb_top.v`. Name testbench tasks after the behavior they check (e.g., `task drive_reset;`). Use `$dumpfile("build/top.vcd")` and `$dumpvars(0, tb_top);` so `make waves` always has data. Keep assertions simple (`$fatal` on mismatch) because iverilog runs fast and gives immediate feedback. Before submitting, run `make all` for every exercise you touched and ensure there are no warnings.
+Ogni modulo deve avere uno stimolo intenzionale in `sim/tb_top.v`. Incapsula i pattern di test in task (es. `drive_and_expect`) e inserisci piccoli ritardi quando lavori con strutture gate-level per dare tempo alle reti di stabilizzarsi. Limita il dump VCD ai segnali rilevanti (`$dumpvars(0, tb_top.clk, tb_top.d, …)`) così `make waves` resta leggibile. Fallisci subito con `$fatal` e spiega nel log perché.
 
 ## Commit & Pull Request Guidelines
-Existing history favors short, imperative summaries (`flip flop`, `Initial commit`). Follow that style: start with a lowercase verb, describe the scope, and keep it under ~60 characters. For multi-directory updates, prefer separate commits per exercise. Pull requests (or shared diffs) should include: what changed, why it was needed, how you validated it (`make all`, waveform inspection), and any follow-up work. Attach waveform screenshots or log snippets when behavior is the main focus.
+Segui la storia esistente: messaggi brevi, imperativi e minuscoli (`add my_ff tb`). Fai un commit per esercizio modificato e cita i comandi usati per la verifica (`make all`, `make waves`). Quando condividi il lavoro, spiega quale concetto hai coperto, perché hai scelto quel flusso passo-passo e quali prove hai eseguito. Fornisci snippet testuali dal terminale invece di screenshot per restare nel flusso CLI.

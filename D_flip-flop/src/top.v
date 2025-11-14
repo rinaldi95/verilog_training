@@ -1,21 +1,18 @@
 module top(
-	input clk,
+	input clock,
 	input reset,
-	input d,
-	output reg q,
-	output reg q_not
+	input D,
+	output reg Q,
+	output Q_not
 	);
 
-
-
-	always @(posedge clk or negedge reset) begin
-		if (!reset) begin
-			q<= 1'b0;
-			q_not <= 1'b1;
+	always @(posedge clock or posedge reset) begin
+		if (reset) begin
+			Q <= 1'b0;
+		end else begin
+			Q <= D;
 		end
-		else begin
-			q<=d;
-			q_not<=~d;
-		end
-	end 
+	end
+
+	assign Q_not = ~Q;
 endmodule

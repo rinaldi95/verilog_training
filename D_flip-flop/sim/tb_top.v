@@ -1,37 +1,37 @@
 `timescale 1ns/1ps
 module tb_top;
-	reg clk;
+	reg clock;
 	reg reset;
-	reg d;
-	wire q;
-	wire q_not;
+	reg D;
+	wire Q;
+	wire Q_not;
+	
 
-	top dut (
-		.clk(clk),
+	top dut(
+		.clock(clock),
 		.reset(reset),
-		.d(d),
-		.q(q),
-		.q_not(q_not)
-	);
+		.D(D),
+		.Q(Q),
+		.Q_not(Q_not)
+		);
+
+		
+	always #5 clock=~clock;
 
 	initial begin
-		clk =0;
-		$dumpfile("build/waves.vcd");
-		$dumpvars(0, tb_top);
-		forever #5 clk = ~clk;
-	end
-
-	initial begin 
-		reset =0;
-		d=0;
-		#10 reset=1;
-		#20 d=1;
-		#20 d=0;
-		#20 d=1;
-		#100 $finish;
+		clock =0;
+		D=0;
+		reset=1;
+		#10 reset=0;
+		#20 D=1;
+		#40 D=0;
+		#70 D=1;
+		#20 $finish;
 	end
 
 	initial begin
-		$monitor("Time=%0t | clk=%b reset=%b d=%b | q=%b q_not=%b", $time,clk, reset, d, q, q_not);
+		$dumpfile("build/waves.vcd"); 
+		$dumpvars(1, tb_top); 
 	end
+
 endmodule
